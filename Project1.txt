@@ -1,0 +1,45 @@
+//To convert the date type to a proper date time format
+
+B = FOREACH A GENERATE id,casenumber,ToDate(SUBSTRING(date,0,18),'MM/dd/yyyy HH:mm:ss') as (date:DateTime),block,IUCR,primarytype,description,locationdescription,
+arrest,domestic,beat,district,ward,communityarea,fbicode,xcoord,ycoord,year,
+ToDate(SUBSTRING(updatedon,0,18),'MM/dd/yyyy HH:mm:ss') as (updatedon:DateTime),latitude,longitude,location;
+
+// Write a MapReduce/Pig program to calculate the number of cases investigated under each FBI code 
+
+1)
+C= foreach B GENERATE id,fbicode;//Only to store id and fbicode
+D= GROUP C by fbicode;//Group by fbicode
+E= FOREACH D generate group,COUNT(C.id);//Count the no of cases in each fbicode
+dump E;
+
+// Write a MapReduce/Pig program to calculate the number of cases investigated under FBI code 32. 
+
+2)
+C= foreach B GENERATE id,fbicode;//Only to store id and fbicode
+D= FILTER C BY fbicode=='32';//filter by that specific code
+E = GROUP D by fbicode;//group by fbicode
+F = foreach E generate group,COUNT(D.id);//count the total number under that fbi code
+dump F;
+
+
+//Write a MapReduce/Pig program to calculate the number of arrests in theft district wise. 
+
+3)
+C= foreach B GENERATE district,primarytype,arrest;
+D= FILTER C by  primarytype=='THEFT' AND arrest=='true';// filter where arrest is true
+E = GROUP D by district;//group by distrcit code
+F= FOREACH E GENERATE group,COUNT(D.arrest);//Count the number of arrest that has been done
+DUMP F;
+
+//Write a MapReduce/Pig program to calculate the number of arrests done between October 2014 and October 2015. 
+
+4)
+C= foreach B GENERATE date,arrest;
+D = FILTER C by arrest=='true' AND (date >= ToDate('2014-10-01')
+ AND date <= ToDate('2015-10-31'));// Filtering by date and arrest
+E = GROUP D ALL ;
+F= foreach E  generate COUNT(D.arrest);// Count the total no of arrest done
+dump F;
+
+
+
